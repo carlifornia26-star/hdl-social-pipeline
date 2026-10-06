@@ -1,0 +1,52 @@
+name: HDL post slot
+on:
+  schedule:
+    # UTC. GitHub runs cron late (often 1-3h), so fire early; the script waits for the exact ET time.
+    - cron: "0 14 * * *"   # midday slot, target 12:00 ET
+    - cron: "0 21 * * *"   # evening slot, target 19:00 ET
+  workflow_dispatch:
+    inputs:
+      slot: { description: "midday or evening", required: true, default: midday }
+      dry_run: { description: "true = render cards + log in + screenshot, no posting", required: true, default: "true" }
+      lanes: { description: "comma list", required: false, default: "bluesky,tumblr,pinterest,instagram,tiktok" }
+concurrency: { group: hdl-post, cancel-in-progress: false }
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-core && pip install pillow
+      - run: npm install && npx playwright install --with-deps chromium
+      - name: Restore browser sessions
+        uses: actions/cache/restore@v4
+        with: { path: .session, key: session-${{ github.run_id }}, restore-keys: "session-" }
+      - name: Run slot
+        run: node run-slot.mjs
+        env:
+          SLOT: ${{ github.event.inputs.slot }}
+          CRON: ${{ github.event.schedule }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          LANES: ${{ github.event.inputs.lanes }}
+          BSKY_USER: ${{ secrets.BSKY_USER }}
+          BSKY_PASS: ${{ secrets.BSKY_PASS }}
+          TUMBLR_USER: ${{ secrets.TUMBLR_USER }}
+          TUMBLR_PASS: ${{ secrets.TUMBLR_PASS }}
+          PINTEREST_USER: ${{ secrets.PINTEREST_USER }}
+          PINTEREST_PASS: ${{ secrets.PINTEREST_PASS }}
+          INSTAGRAM_USER: ${{ secrets.INSTAGRAM_USER }}
+          INSTAGRAM_PASS: ${{ secrets.INSTAGRAM_PASS }}
+          TIKTOK_USER: ${{ secrets.TIKTOK_USER }}
+          TIKTOK_PASS: ${{ secrets.TIKTOK_PASS }}
+      - name: Save browser sessions
+        if: always()
+        uses: actions/cache/save@v4
+        with: { path: .session, key: session-${{ github.run_id }} }
+      - name: Screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: out-${{ github.run_id }}, path: out/, retention-days: 7, if-no-files-found: ignore }
