@@ -7,6 +7,7 @@ export async function bluesky({ page, item, slot, dry }) {
     await page.getByTestId("loginNextButton").click();
     await page.getByRole("button", { name: /compose|new post/i }).first().waitFor({ timeout: 30000 });
   }
+  await page.getByRole("button", { name: /compose|new post/i }).first().waitFor({ timeout: 20000 }).catch(() => { throw new Error("bluesky not logged in"); });
   await page.screenshot({ path: `out/bluesky-${slot}-home.png` });
   if (dry) return;
   for (const [i, c] of item.cards.entries()) {
