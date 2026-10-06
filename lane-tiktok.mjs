@@ -9,6 +9,7 @@ export async function tiktok({ page, clip, slot, dry }) {
   }
   await page.screenshot({ path: `out/tiktok-${slot}-home.png` });
   if (await page.locator('[id*="captcha"], .captcha_verify_container, text=/verify it|drag the slider|enter the code/i').first().isVisible().catch(() => false)) throw new Error("tiktok blocked: captcha or code challenge");
+  if (/login/.test(page.url())) throw new Error(`tiktok not logged in: ${page.url()}`);
   if (dry || !clip) return;
   await page.goto("https://www.tiktok.com/tiktokstudio/upload");
   await page.locator('input[type="file"]').first().setInputFiles(clip.file);
