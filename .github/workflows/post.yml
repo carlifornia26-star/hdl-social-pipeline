@@ -25,7 +25,10 @@ jobs:
       - run: npm install && npx playwright install --with-deps chromium
       - name: Restore browser sessions
         uses: actions/cache/restore@v4
-        with: { path: .session, key: session-${{ github.run_id }}, restore-keys: "session-" }
+        with:
+          path: .session
+          key: session-${{ github.run_id }}
+          restore-keys: session-
       - name: Run slot
         run: node run-slot.mjs
         env:
@@ -46,8 +49,14 @@ jobs:
       - name: Save browser sessions
         if: always()
         uses: actions/cache/save@v4
-        with: { path: .session, key: session-${{ github.run_id }} }
+        with:
+          path: .session
+          key: session-${{ github.run_id }}
       - name: Screenshots and logs
         if: always()
         uses: actions/upload-artifact@v4
-        with: { name: out-${{ github.run_id }}, path: out/, retention-days: 7, if-no-files-found: ignore }
+        with:
+          name: out-${{ github.run_id }}
+          path: out/
+          retention-days: 7
+          if-no-files-found: ignore
