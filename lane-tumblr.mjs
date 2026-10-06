@@ -9,6 +9,7 @@ export async function tumblr({ page, item, slot, dry }) {
     await page.getByRole("button", { name: /log in/i }).first().click();
     await page.waitForURL(/dashboard/, { timeout: 30000 });
   }
+  if (!/dashboard/.test(page.url())) throw new Error(`tumblr not logged in: ${page.url()}`);
   await page.screenshot({ path: `out/tumblr-${slot}-home.png` });
   if (dry) return;
   for (const [i, c] of item.cards.entries()) {
