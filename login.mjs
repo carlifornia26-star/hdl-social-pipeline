@@ -10,4 +10,6 @@ export async function login(page, { url, user, pass }) {
   await pw.fill(pass);
   await pw.press("Enter");
   await page.waitForTimeout(8000);
+  const t = (await page.locator("body").innerText().catch(() => "")).replace(/\s+/g, " ").slice(0, 300);
+  console.log(`[login ${new URL(url).hostname}] after submit url=${page.url()} text=${t}`);
 }
