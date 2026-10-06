@@ -1,6 +1,7 @@
 // TikTok web upload is video-only; cards are skipped. Posts the clip when present. Expect captcha / email-code walls.
 export async function tiktok({ page, clip, slot, dry }) {
   await page.goto("https://www.tiktok.com/login/phone-or-email/email");
+  if (/maximum number of attempts/i.test(await page.locator("body").innerText().catch(() => ""))) throw new Error("tiktok blocked: login attempt limit reached (rate limited)");
   if (await page.locator('input[name="username"]').isVisible().catch(() => false)) {
     await page.locator('input[name="username"]').fill(process.env.TIKTOK_USER);
     await page.locator('input[type="password"]').fill(process.env.TIKTOK_PASS);
