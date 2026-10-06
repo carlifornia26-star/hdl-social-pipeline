@@ -46,7 +46,10 @@ for (const lane of want) {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, storageState: fs.existsSync(`.session/${lane}.json`) ? `.session/${lane}.json` : undefined });
   const page = await ctx.newPage();
   try {
-    await LANES[lane]({ page, item, clip, slot, dry });
+    try { await LANES[lane]({ page, item, clip, slot, dry }); } finally {
+      const body = (await page.locator("body").innerText().catch(() => "")).replace(/\s+/g, " ").slice(0, 400);
+      console.log(`[${lane}] url=${page.url()} title=${await page.title().catch(() => "")} text=${body}`);
+    }
     await ctx.storageState({ path: `.session/${lane}.json` });
     if (!dry) { done[lane] = new Date().toISOString(); fs.writeFileSync(state, JSON.stringify(done)); }
     console.log(`${lane}: ${dry ? "dry ok" : "posted"}`);
