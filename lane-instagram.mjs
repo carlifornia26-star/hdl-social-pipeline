@@ -1,6 +1,7 @@
 // Instagram web: log in, post feed image via the create flow. Expect checkpoints from datacenter IPs.
 export async function instagram({ page, item, slot, dry }) {
-  await page.goto("https://www.instagram.com/accounts/login/");
+  await page.goto("https://www.instagram.com/accounts/login/", { waitUntil: "networkidle" }).catch(() => {});
+  await page.waitForTimeout(5000);
   if (await page.locator('input[name="username"]').isVisible().catch(() => false)) {
     await page.locator('input[name="username"]').fill(process.env.INSTAGRAM_USER);
     await page.locator('input[name="password"]').fill(process.env.INSTAGRAM_PASS);
