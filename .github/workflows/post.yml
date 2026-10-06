@@ -21,6 +21,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-core && pip install pillow
+      - run: base64 -d wink_alpha.b64 > wink_alpha.png
       - run: npm install && npx playwright install --with-deps chromium
       - name: Restore browser sessions
         uses: actions/cache/restore@v4
